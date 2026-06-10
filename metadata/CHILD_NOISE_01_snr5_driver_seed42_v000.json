@@ -1,0 +1,15 @@
+{
+  "file": "CHILD_NOISE_01_snr5_driver_seed42_v000.wav",
+  "scenario_id": "CHILD_NOISE_01",
+  "snr_db": 5,
+  "sample_rate": 16000,
+  "duration_sec": 13.556,
+  "seed": 42,
+  "speaker_position": "driver",
+  "speech_input": "raw/distributed/speech/Talking1.wav",
+  "noise_inputs": [
+    "raw/distributed/background/Crying1.wav"
+  ],
+  "cabin_ir": "raw/distributed/IRs/d53_w0.wav",
+  "generated_at": "2026-05-27T11:44:11.739927"
+}

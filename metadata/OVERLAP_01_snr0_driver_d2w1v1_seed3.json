@@ -1,0 +1,26 @@
+{
+  "file": "OVERLAP_01_snr0_driver_d2w1v1_seed3.wav",
+  "scenario_id": "OVERLAP_01",
+  "snr_db": 0.0,
+  "sample_rate": 16000,
+  "channels": 2,
+  "duration_sec": 13.556,
+  "seed": 3,
+  "speaker_position": "driver",
+  "driving": 2,
+  "window": 1,
+  "venting": 1,
+  "speech_input": "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/speech/Talking1.wav",
+  "noise_inputs": [
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed\\noise\\s70_w0_ver1.wav",
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed\\ventilation\\v1_w0.wav",
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/speech/Talking3.wav"
+  ],
+  "cabin_ir": "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/IRs/d53_w1.wav",
+  "overlays_applied": [
+    "rain",
+    "car_passing"
+  ],
+  "engine": "cranbrook-mixer",
+  "generated_at": "2026-05-28T15:00:37.291802"
+}

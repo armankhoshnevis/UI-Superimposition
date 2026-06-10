@@ -1,0 +1,17 @@
+services:
+  hatci-audio-mixer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hatci-audio-mixer:latest
+    working_dir: /app
+    volumes:
+      - .:/app
+      - transform_build:/app/transform/build
+      - venv:/app/.venv
+    stdin_open: true
+    tty: true
+
+volumes:
+  transform_build:
+  venv:

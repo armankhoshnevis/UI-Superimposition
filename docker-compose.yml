@@ -1,0 +1,23 @@
+# Integrated backend: React UI -> http://localhost:5000 -> Flask -> real engine.
+#
+#   docker compose up --build      # build + run on :5000
+#
+# The UI still runs on the host (cd ui && npm run dev); only the Python backend
+# and its native audio engine live in the container. NOT verified yet — Docker
+# was not installed on the authoring machine.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: hatci-integrated-backend:latest
+    ports:
+      - "5000:5000"
+    # For live code editing without rebuilding, uncomment the bind mount below.
+    # The named volume keeps the compiled SAF .so from being hidden by the mount
+    # (same pattern as cranbrook-audio-project/docker-compose.yml).
+    # volumes:
+    #   - .:/app
+    #   - saf_build:/app/cranbrook-audio-project/transform/build
+# volumes:
+#   saf_build:

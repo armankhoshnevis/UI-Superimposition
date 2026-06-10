@@ -1,0 +1,25 @@
+{
+  "file": "WAKE_HVAC_01_snr5_driver_d3w2v3_seed42.wav",
+  "scenario_id": "WAKE_HVAC_01",
+  "snr_db": 5.0,
+  "sample_rate": 16000,
+  "channels": 2,
+  "duration_sec": 13.556,
+  "seed": 42,
+  "speaker_position": "driver",
+  "driving": 3,
+  "window": 2,
+  "venting": 3,
+  "speech_input": "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/speech/Talking1.wav",
+  "noise_inputs": [
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/ventilation/v3_w0.wav",
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed\\noise\\s110_w2.wav",
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed\\ventilation\\v3_w2.wav"
+  ],
+  "cabin_ir": "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/IRs/d53_w2.wav",
+  "overlays_applied": [
+    "emergency_siren"
+  ],
+  "engine": "cranbrook-mixer",
+  "generated_at": "2026-05-28T15:04:23.228919"
+}

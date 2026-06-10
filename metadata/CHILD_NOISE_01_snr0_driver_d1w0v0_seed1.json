@@ -1,0 +1,24 @@
+{
+  "file": "CHILD_NOISE_01_snr0_driver_d1w0v0_seed1.wav",
+  "scenario_id": "CHILD_NOISE_01",
+  "snr_db": 0.0,
+  "sample_rate": 16000,
+  "channels": 2,
+  "duration_sec": 13.556,
+  "seed": 1,
+  "speaker_position": "driver",
+  "driving": 1,
+  "window": 0,
+  "venting": 0,
+  "speech_input": "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/speech/Talking1.wav",
+  "noise_inputs": [
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed\\noise\\s50_w0_ver1.wav",
+    "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/background/Crying1.wav"
+  ],
+  "cabin_ir": "C:\\Users\\danie.LENOVO-DG\\Documents\\GitHub\\HyuandaiSeniorMayMixer\\raw\\distributed/IRs/d53_w0.wav",
+  "overlays_applied": [
+    "baby_crying"
+  ],
+  "engine": "cranbrook-mixer",
+  "generated_at": "2026-05-28T14:13:55.290773"
+}

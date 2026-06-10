@@ -1,0 +1,12 @@
+{
+  "file_name": "te",
+  "format": "wav",
+  "duration_sec": 13.556,
+  "parameters": {
+    "driving": 0,
+    "window": 0,
+    "venting": 0,
+    "overlays": []
+  },
+  "source_file": "CHILD_NOISE_01_snr5_driver_seed42_v000.wav"
+}

@@ -1,0 +1,13 @@
+# Python deps for the Flask backend + the cranbrook audio engine it now drives.
+# (Resolves the README's "no requirements.txt yet" follow-up.)
+#
+# librosa wheels don't exist for Python 3.14 yet — on the host the adapter stubs
+# it for the core mix path. Use Python 3.12 (or the Docker image) to install it.
+flask
+flask-cors
+pyyaml
+numpy
+scipy
+soundfile
+cffi
+librosa
