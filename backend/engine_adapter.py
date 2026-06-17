@@ -50,14 +50,16 @@ _GENERATOR_DIR = os.path.join(_HERE, "generator")
 if _GENERATOR_DIR not in sys.path:
     sys.path.insert(0, _GENERATOR_DIR)
 
-from audio_io import load_wav, normalize_rms, prevent_clipping, apply_cabin_ir  # noqa: E402
+from generator.audio_io import load_wav, normalize_rms, prevent_clipping, apply_cabin_ir  # noqa: E402
+
+from superimposition import noise_superimposition
 
 TARGET_SR = 16000          # canonical pipeline rate (audio_io.load_wav resamples to this)
 SPEECH_RMS_DB = -20.0      # reference level everything is mixed relative to
 
 _REPO_ROOT = os.path.abspath(os.path.join(_HERE, ".."))
 _ENGINE_ROOT = os.path.join(_REPO_ROOT, "cranbrook-audio-project")
-
+_DATA_ROOT = os.path.join(_REPO_ROOT, "data")
 
 # ---------------------------------------------------------------------------
 # Inter-team CONTRACT #1: overlay sound_id -> sample file under raw/.
@@ -91,7 +93,7 @@ SOUND_FILE_MAP = {
 
 # CONTRACT #2: UI driving level (0..3) -> road-noise speed bucket in raw/noise.
 # Available speeds: s0, s40, s50, s60, s70, s100, s110.
-_DRIVING_TO_SPEED = {0: "s0", 1: "s50", 2: "s70", 3: "s110"}
+_DRIVING_TO_SPEED = {0: "s0", 1: "s25", 2: "s45", 3: "s70"}
 
 
 # ---------------------------------------------------------------------------
@@ -281,103 +283,176 @@ def generate_from_payload(req, scenario):
     Returns:
         (wav_path, meta) — same shape backend/app.py already returns.
     """
-    mix_audio = _load_mixer().mix_audio
-
-    sid = scenario["scenario_id"]
-    snr_db = float(req.get("snr_db", 5))
-    position = req.get("speaker_position", "driver")
-    seed = int(req.get("seed", 42))
+    scenario_id = scenario["scenario_id"]
     driving = int(req.get("driving", 0))
     window = int(req.get("window", 0))
     venting = int(req.get("venting", 0))
-    overlays = req.get("overlays", []) or []
-
-    np.random.seed(seed)
-    ingredients = scenario.get("audio_ingredients", {})
-
-    # --- Target speech (the thing ASR must hear), optionally run through the IR
-    speech_rel = ingredients["target_speech"]["file"]
-    speech = _load_norm(_raw(speech_rel))
-    ir_path = _resolve_cabin_ir(scenario, window)
-    if ir_path:
-        ir, _ = load_wav(ir_path)
-        speech = apply_cabin_ir(speech, ir)
-
-    tracks = [(speech, 0.0, 0.0)]
-    noise_inputs = []
-
-    # --- Scenario-declared background noise (if any), at the requested SNR
-    if "background_noise" in ingredients:
-        bn = _raw(ingredients["background_noise"]["file"])
-        if os.path.exists(bn):
-            tracks.append((_load_norm(bn), 0.0, -snr_db))
-            noise_inputs.append(bn)
-
-    # --- Road noise selected by the UI speed/window sliders
-    road = _select_road_noise(driving, window)
-    if road:
-        tracks.append((_load_norm(road), 0.0, -snr_db))
-        noise_inputs.append(road)
-
-    # --- Ventilation noise selected by the UI vent/window sliders
-    vent = _select_ventilation(venting, window)
-    if vent:
-        tracks.append((_load_norm(vent), 0.0, -snr_db - 3))  # vents sit a touch below road noise
-        noise_inputs.append(vent)
-
-    # --- Competing speech (distractor), slightly offset
-    if "competing_speech" in ingredients:
-        comp = _raw(ingredients["competing_speech"]["file"])
-        if os.path.exists(comp):
-            tracks.append((_load_norm(comp), float(np.random.uniform(0.0, 1.0)), -snr_db))
-            noise_inputs.append(comp)
-
-    # --- UI overlays (gain/offset always; spatial via transform or pan)
-    overlays_applied = []
-    for ov in overlays:
-        t = _overlay_track(ov)
-        if t:
-            tracks.append(t)
-            overlays_applied.append(ov.get("name"))
-
-    # --- Clip length is driven by the TARGET SPEECH (this is an ASR stress
-    # test — the speech defines the window). The engine's mix_audio trims every
-    # longer noise/overlay track to this length, matching the original pipeline.
-    speech_dur = len(speech) / TARGET_SR
-    duration = max(speech_dur, 2.0) + 0.5
-
-    # --- Run the REAL engine mix, then guard the peak
-    mixed = mix_audio([duration] + tracks, target_sr=TARGET_SR)
-    mixed = prevent_clipping(mixed)
-
-    # --- Write audio + metadata where app.py serves them from
-    out_name = f"{sid}_snr{int(snr_db)}_{position}_d{driving}w{window}v{venting}_seed{seed}.wav"
+    
     synth_dir = os.path.join(_REPO_ROOT, "synthetic")
     meta_dir = os.path.join(_REPO_ROOT, "metadata")
     os.makedirs(synth_dir, exist_ok=True)
     os.makedirs(meta_dir, exist_ok=True)
+
+    ns = noise_superimposition(_DATA_ROOT, fs=48000)
+    
+    audio_list = []
+    
+    noise = ns.get_noise(
+        speed=driving,
+        window=window,
+        mics=None,
+        use_correction_gains=False,
+    )
+    audio_list.append(noise)
+
+    if venting != 0:
+        ventilation = ns.get_ventilation(
+            level=venting,
+            window=window,
+            mics=None,
+            use_correction_gains=False,
+        )
+        audio_list.append(ventilation)
+    
+    matched_components = noise_superimposition.match_duration(
+        audio_list,
+        fs=ns.fs,
+    )
+
+    audio_superimposed = np.sum(np.stack(matched_components, axis=0), axis=0)
+
+    out_name = f"{scenario_id}_speed{driving}_window{window}_vent{venting}.wav"
     out_path = os.path.join(synth_dir, out_name)
-    sf.write(out_path, mixed, TARGET_SR)
+    
+    sf.write(out_path, audio_superimposed, ns.fs)
 
     meta = {
         "file": out_name,
-        "scenario_id": sid,
-        "snr_db": snr_db,
-        "sample_rate": TARGET_SR,
-        "channels": int(mixed.ndim == 2 and mixed.shape[1] or 1),
-        "duration_sec": float(duration),
-        "seed": seed,
-        "speaker_position": position,
+        "scenario_id": scenario_id,
+        "sample_rate": ns.fs,
+        "channels": int(audio_superimposed.shape[1]) if audio_superimposed.ndim == 2 else 1,
+        "duration_sec": float(audio_superimposed.shape[0] / ns.fs),
         "driving": driving,
         "window": window,
         "venting": venting,
-        "speech_input": _raw(speech_rel),
-        "noise_inputs": noise_inputs,
-        "cabin_ir": ir_path or "",
-        "overlays_applied": overlays_applied,
-        "engine": "cranbrook-mixer",
-        "generated_at": datetime.now().isoformat(),
+        "use_correction_gains": False,
+        "engine": "hatci-noise-superimposition",
     }
-    with open(os.path.join(meta_dir, out_name.replace(".wav", ".json")), "w") as f:
+
+    meta_name = f"{scenario_id}_speed{driving}_window{window}_vent{venting}.json"
+    meta_path = os.path.join(meta_dir, meta_name)
+    with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2)
+    
     return out_path, meta
+
+# def generate_from_payload(req, scenario):
+#     """Generate one mixed WAV from a /generate payload using the real engine.
+
+#     Params:
+#         req: the parsed JSON request body from POST /generate.
+#         scenario: the loaded scenario dict (from load_scenario).
+
+#     Returns:
+#         (wav_path, meta) — same shape backend/app.py already returns.
+#     """
+#     mix_audio = _load_mixer().mix_audio
+
+#     sid = scenario["scenario_id"]
+#     snr_db = float(req.get("snr_db", 5))
+#     position = req.get("speaker_position", "driver")
+#     seed = int(req.get("seed", 42))
+#     driving = int(req.get("driving", 0))
+#     window = int(req.get("window", 0))
+#     venting = int(req.get("venting", 0))
+#     overlays = req.get("overlays", []) or []
+
+#     np.random.seed(seed)
+#     ingredients = scenario.get("audio_ingredients", {})
+
+#     # --- Target speech (the thing ASR must hear), optionally run through the IR
+#     speech_rel = ingredients["target_speech"]["file"]
+#     speech = _load_norm(_raw(speech_rel))
+#     ir_path = _resolve_cabin_ir(scenario, window)
+#     if ir_path:
+#         ir, _ = load_wav(ir_path)
+#         speech = apply_cabin_ir(speech, ir)
+
+#     tracks = [(speech, 0.0, 0.0)]
+#     noise_inputs = []
+
+#     # --- Scenario-declared background noise (if any), at the requested SNR
+#     if "background_noise" in ingredients:
+#         bn = _raw(ingredients["background_noise"]["file"])
+#         if os.path.exists(bn):
+#             tracks.append((_load_norm(bn), 0.0, -snr_db))
+#             noise_inputs.append(bn)
+
+#     # --- Road noise selected by the UI speed/window sliders
+#     road = _select_road_noise(driving, window)
+#     if road:
+#         tracks.append((_load_norm(road), 0.0, -snr_db))
+#         noise_inputs.append(road)
+
+#     # --- Ventilation noise selected by the UI vent/window sliders
+#     vent = _select_ventilation(venting, window)
+#     if vent:
+#         tracks.append((_load_norm(vent), 0.0, -snr_db - 3))  # vents sit a touch below road noise
+#         noise_inputs.append(vent)
+
+#     # --- Competing speech (distractor), slightly offset
+#     if "competing_speech" in ingredients:
+#         comp = _raw(ingredients["competing_speech"]["file"])
+#         if os.path.exists(comp):
+#             tracks.append((_load_norm(comp), float(np.random.uniform(0.0, 1.0)), -snr_db))
+#             noise_inputs.append(comp)
+
+#     # --- UI overlays (gain/offset always; spatial via transform or pan)
+#     overlays_applied = []
+#     for ov in overlays:
+#         t = _overlay_track(ov)
+#         if t:
+#             tracks.append(t)
+#             overlays_applied.append(ov.get("name"))
+
+#     # --- Clip length is driven by the TARGET SPEECH (this is an ASR stress
+#     # test — the speech defines the window). The engine's mix_audio trims every
+#     # longer noise/overlay track to this length, matching the original pipeline.
+#     speech_dur = len(speech) / TARGET_SR
+#     duration = max(speech_dur, 2.0) + 0.5
+
+#     # --- Run the REAL engine mix, then guard the peak
+#     mixed = mix_audio([duration] + tracks, target_sr=TARGET_SR)
+#     mixed = prevent_clipping(mixed)
+
+#     # --- Write audio + metadata where app.py serves them from
+#     out_name = f"{sid}_snr{int(snr_db)}_{position}_d{driving}w{window}v{venting}_seed{seed}.wav"
+#     synth_dir = os.path.join(_REPO_ROOT, "synthetic")
+#     meta_dir = os.path.join(_REPO_ROOT, "metadata")
+#     os.makedirs(synth_dir, exist_ok=True)
+#     os.makedirs(meta_dir, exist_ok=True)
+#     out_path = os.path.join(synth_dir, out_name)
+#     sf.write(out_path, mixed, TARGET_SR)
+
+#     meta = {
+#         "file": out_name,
+#         "scenario_id": sid,
+#         "snr_db": snr_db,
+#         "sample_rate": TARGET_SR,
+#         "channels": int(mixed.ndim == 2 and mixed.shape[1] or 1),
+#         "duration_sec": float(duration),
+#         "seed": seed,
+#         "speaker_position": position,
+#         "driving": driving,
+#         "window": window,
+#         "venting": venting,
+#         "speech_input": _raw(speech_rel),
+#         "noise_inputs": noise_inputs,
+#         "cabin_ir": ir_path or "",
+#         "overlays_applied": overlays_applied,
+#         "engine": "cranbrook-mixer",
+#         "generated_at": datetime.now().isoformat(),
+#     }
+#     with open(os.path.join(meta_dir, out_name.replace(".wav", ".json")), "w") as f:
+#         json.dump(meta, f, indent=2)
+#     return out_path, meta
