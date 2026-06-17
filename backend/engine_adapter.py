@@ -52,7 +52,7 @@ if _GENERATOR_DIR not in sys.path:
 
 from generator.audio_io import load_wav, normalize_rms, prevent_clipping, apply_cabin_ir  # noqa: E402
 
-from superimposition import noise_superimposition
+from superimposition.noise_superimposition import noise_superimposition
 
 TARGET_SR = 16000          # canonical pipeline rate (audio_io.load_wav resamples to this)
 SPEECH_RMS_DB = -20.0      # reference level everything is mixed relative to
@@ -93,8 +93,8 @@ SOUND_FILE_MAP = {
 
 # CONTRACT #2: UI driving level (0..3) -> road-noise speed bucket in raw/noise.
 # Available speeds: s0, s40, s50, s60, s70, s100, s110.
-_DRIVING_TO_SPEED = {0: "s0", 1: "s25", 2: "s45", 3: "s70"}
-
+_DRIVING_TO_SPEED = {0: 0, 1: 25, 2: 45, 3: 70}
+_VENTING_TO_LEVEL = {0: 0, 1: 2, 2: 4, 3: 4}
 
 # ---------------------------------------------------------------------------
 # Lazy load of the engine's mixer (importable mix_audio lives in the engine repo)
@@ -287,6 +287,9 @@ def generate_from_payload(req, scenario):
     driving = int(req.get("driving", 0))
     window = int(req.get("window", 0))
     venting = int(req.get("venting", 0))
+
+    speed = _DRIVING_TO_SPEED.get(driving, 0)
+    vent_level = _VENTING_TO_LEVEL.get(venting, 0)
     
     synth_dir = os.path.join(_REPO_ROOT, "synthetic")
     meta_dir = os.path.join(_REPO_ROOT, "metadata")
@@ -298,16 +301,16 @@ def generate_from_payload(req, scenario):
     audio_list = []
     
     noise = ns.get_noise(
-        speed=driving,
+        speed=speed,
         window=window,
         mics=None,
         use_correction_gains=False,
     )
     audio_list.append(noise)
 
-    if venting != 0:
+    if vent_level != 0:
         ventilation = ns.get_ventilation(
-            level=venting,
+            level=vent_level,
             window=window,
             mics=None,
             use_correction_gains=False,
@@ -321,7 +324,7 @@ def generate_from_payload(req, scenario):
 
     audio_superimposed = np.sum(np.stack(matched_components, axis=0), axis=0)
 
-    out_name = f"{scenario_id}_speed{driving}_window{window}_vent{venting}.wav"
+    out_name = f"{scenario_id}_speed{speed}_window{window}_vent{vent_level}.wav"
     out_path = os.path.join(synth_dir, out_name)
     
     sf.write(out_path, audio_superimposed, ns.fs)
@@ -339,7 +342,7 @@ def generate_from_payload(req, scenario):
         "engine": "hatci-noise-superimposition",
     }
 
-    meta_name = f"{scenario_id}_speed{driving}_window{window}_vent{venting}.json"
+    meta_name = f"{scenario_id}_speed{speed}_window{window}_vent{vent_level}.json"
     meta_path = os.path.join(meta_dir, meta_name)
     with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2)
