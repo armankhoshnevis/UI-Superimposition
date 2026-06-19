@@ -1,0 +1,6 @@
+scenario_id: demo
+name: Demo Scenario
+purpose: Minimal test scenario for HATCI noise superimposition.
+category: test
+severity: low
+parameter_ranges: {}
