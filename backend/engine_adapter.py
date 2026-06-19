@@ -342,7 +342,7 @@ def generate_from_payload(req, scenario):
         "engine": "hatci-noise-superimposition",
     }
 
-    meta_name = f"{scenario_id}_speed{speed}_window{window}_vent{vent_level}.json"
+    meta_name = f"scenario_id{scenario_id}_speed{speed}_window{window}_vent{vent_level}.json"
     meta_path = os.path.join(meta_dir, meta_name)
     with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2)
