@@ -1,0 +1,360 @@
+/* ui/src/theme.css — HATCI research-style theme */
+ 
+:root {
+  --navy: #1F3A5F;
+  --blue: #2E75B6;
+  --light-blue: #EAF2F8;
+  --bg: #F5F7F9;
+  --card-bg: #FFFFFF;
+  --text: #333333;
+  --text-muted: #777777;
+  --border: #DDE3EA;
+  --orange: #F0AD4E;
+  --green: #5CB85C;
+  --red: #D9534F;
+}
+ 
+* { box-sizing: border-box; }
+ 
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.header {
+  background: var(--navy);
+  color: white;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--blue);
+  box-shadow: 0 1px 4px rgba(31, 58, 95, 0.18);
+}
+.header h1 {
+  font-size: 21px;
+  font-weight: 600;
+  margin: 0;
+}
+.header .subtitle {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-left: 8px;
+}
+.header-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+.header-spacer {
+  flex: 1;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Hamburger menu lives in the header at <900px (see media query below).
+   Hidden by default; the wrapper is the positioning context for the
+   dropdown, which is portal-less and anchored absolute to the right edge. */
+.header-menu {
+  position: relative;
+}
+.header-hamburger {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.header-hamburger:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.header-hamburger:focus-visible {
+  outline: 2px solid var(--light-blue);
+  outline-offset: 2px;
+}
+.header-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(31, 58, 95, 0.18);
+  z-index: 50;
+}
+.header-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+.header-dropdown-item:hover { background: var(--light-blue); }
+.header-dropdown-item.is-active { background: var(--navy); color: white; }
+.header-dropdown-item.is-active:hover { background: var(--blue); }
+
+/* App layout: single column at narrow widths (hamburger picks one panel
+   at a time, see <1200px block below), 3 columns at >=1200px. Sides are
+   intentionally narrow so the center panel reads as the hero. */
+.app-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 8px;
+  align-items: start;
+}
+
+/* Three-column layout only kicks in when the viewport is wide enough for
+   the center hero to actually breathe. Side panels are clamped — they
+   grow with the viewport but never crowd the center. At ~1200px the
+   center still gets ~520px; at 1920px it gets ~990px. */
+@media (min-width: 1200px) {
+  .app-layout {
+    grid-template-columns:
+      clamp(280px, 26vw, 400px)
+      minmax(360px, 1fr)
+      clamp(320px, 28vw, 500px);
+  }
+}
+
+/* Phone: tighten header, hide subtitle, let actions go full-width */
+@media (max-width: 640px) {
+  .header {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .header h1 {
+    font-size: 15px;
+    flex: 1 1 100%;
+    order: 2;
+  }
+  .header .subtitle {
+    display: none;
+  }
+  .header-spacer {
+    display: none;
+  }
+  .header-actions {
+    order: 3;
+    width: 100%;
+  }
+  .header-actions button {
+    flex: 1;
+  }
+  /* Once .header-spacer is hidden the hamburger needs its own right-align. */
+  .header-menu {
+    margin-left: auto;
+  }
+  .app-layout {
+    padding: 6px;
+    gap: 6px;
+  }
+  .panel {
+    padding: 10px;
+  }
+}
+
+/* Single-panel mode. Below 1200px (i.e. anywhere the 3-column layout
+   does not fit) the user picks one panel at a time via the header's
+   hamburger menu; the others are hidden. There is no intermediate
+   vertical-stack layout — it is either 3 columns or hamburger. Lives
+   after the 640px block so equal-specificity rules cascade correctly. */
+@media (max-width: 1199px) {
+  .header-hamburger {
+    display: inline-flex;
+    align-items: center;
+  }
+  /* Hide every panel, then re-show the one selected in App.jsx via the
+     data attribute on .app-layout. */
+  .app-layout[data-mobile-panel] > * { display: none; }
+  .app-layout[data-mobile-panel="left"]   > :nth-child(1) { display: block; }
+  .app-layout[data-mobile-panel="center"] > :nth-child(2) { display: block; }
+  .app-layout[data-mobile-panel="right"]  > :nth-child(3) { display: block; }
+}
+
+.panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+.panel h3 {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--navy);
+  margin: 0 0 6px 0;
+}
+
+/* Hero panels — the focal center column. Lift them with a soft shadow
+   instead of a border so the side panels recede visually. */
+.panel--hero {
+  border: 1px solid rgba(31, 58, 95, 0.08);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgba(31, 58, 95, 0.06),
+    0 6px 18px rgba(31, 58, 95, 0.08);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.panel--hero h3 {
+  font-size: 15px;
+  margin: 0 0 8px 0;
+}
+ 
+button {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+}
+button:hover { background: var(--light-blue); }
+button.primary {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+button.primary:hover { background: var(--blue); }
+button.active {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+ 
+.button-group {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 3px 0;
+  font-size: 14px;
+}
+
+.slider-row {
+  display: grid;
+  /* Narrow label + value columns so the slider track (the 1fr middle
+     column) gets the rest of the row — the side columns previously ate
+     ~160px out of a ~196px panel, leaving the track tiny. */
+  grid-template-columns: 60px 1fr 46px;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0;
+  font-size: 13px;
+}
+.slider-row input[type=range] {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.slider-row .value {
+  text-align: right;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+ 
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(46, 117, 182, 0.18);
+}
+
+.scenario-selected {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: var(--light-blue);
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  color: var(--navy);
+}
+.scenario-selected-id {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 2px;
+}
+.scenario-selected-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.3;
+}
+.scenario-selected-purpose {
+  font-size: 13px;
+  color: var(--text);
+  margin-top: 4px;
+  line-height: 1.35;
+}
+ 
+.error {
+  color: var(--red);
+  background: #fdf2f2;
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 8px 0;
+}
+ 
+.loading {
+  text-align: center;
+  padding: 16px;
+  color: var(--text-muted);
+}
+ 
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

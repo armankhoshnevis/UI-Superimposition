@@ -1,0 +1,216 @@
+/* ui/src/components/LeftPanel.css — instrument-panel styling for the LeftPanel controls */
+
+/* ============ Speed slider ============ */
+
+.speed-area {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.speed-readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 4px;
+  color: var(--navy);
+}
+.speed-readout .speed-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
+}
+.speed-readout .speed-unit {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.speed-readout .speed-state {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--blue);
+  background: var(--light-blue);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.speed-slider-wrap {
+  position: relative;
+  padding: 0 6px;
+}
+.speed-slider-wrap input[type=range] {
+  width: 100%;
+  accent-color: var(--blue);
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+.speed-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 0 6px;
+}
+.speed-ticks span {
+  width: 1px;
+  height: 6px;
+  background: var(--border);
+}
+.speed-ticks span.major {
+  width: 1px;
+  height: 9px;
+  background: var(--blue);
+  opacity: 0.6;
+}
+.speed-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ Window control (single global slider) ============ */
+
+.car-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.car-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.car-slider-block {
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
+}
+.car-slider-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.openness-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  margin-top: 4px;
+}
+.openness-row input[type=range] {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.openness-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.openness-labels span.active {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+/* ============ Sound mixer ============ */
+
+.mixer-row {
+  display: grid;
+  grid-template-columns: 18px 78px 1fr 58px;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.mixer-row:last-child {
+  border-bottom: none;
+}
+
+.led {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  justify-self: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+.led:hover {
+  border-color: var(--blue);
+}
+.led.on {
+  background: var(--green);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 6px rgba(92, 184, 92, 0.55), inset 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.mixer-label {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.mixer-row.off .mixer-label {
+  color: var(--text-muted);
+}
+
+.mixer-slider {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.mixer-row.off .mixer-slider {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.db-display {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  text-align: right;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  letter-spacing: 0.2px;
+}
+.mixer-row.off .db-display {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* Phone: larger touch targets for LEDs + mixer grid */
+@media (max-width: 640px) {
+  .mixer-row {
+    grid-template-columns: 28px 90px 1fr 64px;
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .led {
+    width: 22px;
+    height: 22px;
+  }
+}

@@ -1,0 +1,793 @@
+/* ui/src/components/CenterPanel.css
+   Styles for CenterPanel + its CarView child.
+   Color tokens come from theme.css. Class names are scoped with
+   `car-view-*` to avoid colliding with LeftPanel classes. */
+
+.car-view {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+/* Floating label shown when a sound (in mixer or in the scene) is
+   hovered — tucked into the top-right of the car view, just under the
+   add/reset buttons, with an icon to the left of the name. The beveled
+   box uses a layered inset/outset shadow to give it a subtle 3D edge. */
+.car-view-hover-label {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 5;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--navy);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  padding: 7px 14px;
+  border: 2px solid var(--navy);
+  border-radius: 4px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.85),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.18),
+    0 3px 8px rgba(31, 58, 95, 0.22);
+  white-space: nowrap;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.car-view-hover-label > svg {
+  flex-shrink: 0;
+  color: var(--navy);
+}
+.car-view-hover-label > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-model-select {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.center-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* The primary CTA of the whole tool — make it loud. */
+.generate-btn {
+  flex: 1;
+  max-width: 480px;
+  padding: 12px 28px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #2E75B6 0%, #1F3A5F 100%);
+  color: white;
+  border: 1px solid var(--navy);
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow:
+    0 2px 6px rgba(31, 58, 95, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: filter 0.15s ease, box-shadow 0.15s ease,
+              transform 0.08s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.generate-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow:
+    0 4px 14px rgba(46, 117, 182, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.generate-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 3px rgba(31, 58, 95, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.generate-btn:disabled {
+  background: var(--text-muted);
+  border-color: var(--text-muted);
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.car-view-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.car-view-toolbar select {
+  width: auto;
+  min-width: 160px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+.car-view-toolbar button {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+.car-view-toolbar .side-toggle {
+  min-width: 92px;
+  font-variant-numeric: tabular-nums;
+}
+.car-view-toolbar .spacer { flex: 1; }
+
+.car-view-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.car-view-bottom {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 2px;
+  border-top: 1px dashed var(--border);
+}
+.car-view-bottom button {
+  padding: 6px 14px;
+  font-size: 14px;
+  color: var(--red);
+  border-color: var(--border);
+}
+.car-view-bottom button:hover:not(:disabled) {
+  background: #fdf2f2;
+  border-color: var(--red);
+}
+
+.car-view svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.car-view-window-group ellipse {
+  transition: fill 0.15s ease, stroke 0.15s ease, fill-opacity 0.15s ease;
+}
+.car-view-window-group:hover ellipse {
+  stroke: var(--blue);
+  stroke-width: 5;
+  fill-opacity: 0.7;
+}
+
+.car-view-legend-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.car-view-legend-row .lgd-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.car-view-legend-row .lgd-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.car-view-legend-row .lgd-source { background: var(--orange); }
+.car-view-legend-row .lgd-mic    { background: var(--navy); }
+
+.car-view-sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  max-height: 160px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.car-view-source-item {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--bg);
+}
+.car-view-source-item .swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  justify-self: center;
+}
+.car-view-source-item .src-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.car-view-source-item .src-type {
+  font-weight: 600;
+  color: var(--text);
+}
+.car-view-source-item .src-mode {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.car-view-source-item button.delete-btn {
+  padding: 0 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--red);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.car-view-source-item button.delete-btn:hover {
+  background: #fdf2f2;
+  border-color: var(--red);
+}
+
+/* Audio Save and Export modal */
+.ase-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.ase-modal {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 380px;
+  max-width: 520px;
+  width: 90%;
+  padding: 16px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+.ase-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.ase-modal-header h3 { margin: 0; font-size: 16px; }
+.ase-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0 6px;
+}
+.ase-close:hover { color: var(--text); }
+
+.audio-save-export {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.audio-save-export .ase-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.audio-save-export .ase-row label {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.audio-save-export .ase-row input {
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+.audio-save-export .ase-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.audio-save-export .ase-buttons button {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+.audio-save-export .ase-download-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.audio-save-export .ase-download-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.audio-save-export .ase-download-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.audio-save-export .ase-status {
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.audio-save-export .ase-status.ok    { color: var(--text); background: var(--bg); }
+.audio-save-export .ase-status.error { color: var(--red); background: #fdf2f2; border-color: var(--red); }
+
+/* ============ Audio Preview modal ============ */
+.audio-preview-modal {
+  min-width: 560px;
+  max-width: 780px;
+  width: 92%;
+}
+.apm-waveform {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin-bottom: 6px;
+}
+.apm-spectrogram {
+  background: #000;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  /* The wavesurfer spectrogram plugin lays out its label column + canvas
+     as inline-block children. They can leave a vertical gap from the
+     line-height of the surrounding box — collapse it. */
+  line-height: 0;
+  font-size: 0;
+}
+/* Force black across every descendant the spectrogram plugin injects.
+   The plugin's wrapper / canvas-container / labels divs otherwise inherit
+   a light background (the page's --bg) and show through as a gray strip
+   wherever the spectrogram canvas hasn't been painted yet. */
+.apm-spectrogram *:not(canvas) {
+  background-color: #000 !important;
+  background-image: none !important;
+}
+.apm-spectrogram canvas {
+  display: block;
+  background: transparent !important;
+}
+.apm-spec-error {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+.apm-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.apm-footer .apm-play-btn {
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.apm-footer .apm-details-btn {
+  margin-left: auto;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.apm-footer .apm-export-btn {
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.apm-duration {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.apm-range {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+}
+@media (max-width: 640px) {
+  .audio-preview-modal {
+    min-width: 0;
+    width: 96%;
+  }
+}
+
+/* ============ Add Sound modal ============ */
+.add-sound-modal {
+  min-width: 460px;
+  max-width: 600px;
+}
+
+.add-sound-cat-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.add-sound-cat-tabs button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 14px;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.add-sound-cat-tabs button:hover { border-color: var(--blue); }
+.add-sound-cat-tabs button.active {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+.add-sound-cat-tabs .cat-label { font-weight: 600; font-size: 14px; }
+.add-sound-cat-tabs .cat-blurb { font-size: 12px; opacity: 0.75; }
+
+.add-sound-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+@media (max-width: 640px) {
+  .add-sound-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.add-sound-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  font-size: 12px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  line-height: 1.2;
+}
+.add-sound-card:hover { border-color: var(--blue); }
+.add-sound-card.selected {
+  border-color: var(--blue);
+  background: var(--light-blue);
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.add-sound-direction {
+  margin-bottom: 12px;
+}
+.add-sound-direction > label {
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.add-sound-direction .direction-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.add-sound-direction .direction-options button {
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+.add-sound-direction .direction-options button:hover { border-color: var(--blue); }
+.add-sound-direction .direction-options button.active {
+  background: var(--navy); color: white; border-color: var(--navy);
+}
+
+.add-sound-modal .ase-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.add-sound-modal .ase-buttons button {
+  padding: 6px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+.add-sound-modal .ase-buttons button:hover { border-color: var(--blue); }
+.add-sound-modal .ase-buttons button.primary {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+.add-sound-modal .ase-buttons button.primary:hover { background: var(--blue); border-color: var(--blue); }
+.add-sound-modal .ase-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ============ Sound Mixer v2 ============ */
+.sound-mixer-v2 .sound-mixer-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.sound-mixer-v2 .add-sound-btn {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  background: var(--navy);
+  color: white;
+  border: 1px solid var(--navy);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.sound-mixer-v2 .add-sound-btn:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.sound-mixer-v2 .reset-btn {
+  padding: 8px 14px;
+  font-size: 14px;
+  color: var(--red);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.sound-mixer-v2 .reset-btn:hover:not(:disabled) {
+  background: #fdf2f2;
+  border-color: var(--red);
+}
+.sound-mixer-v2 .reset-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sound-mixer-v2 .placement-banner {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: #fff7e6;
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+.sound-mixer-v2 .empty-mixer {
+  padding: 16px 8px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Cap the row list at ~5 rows; scrollbar appears once it overflows. */
+.sound-mixer-v2 .mixer-rows {
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--blue) transparent;
+}
+.sound-mixer-v2 .mixer-rows::-webkit-scrollbar {
+  width: 8px;
+}
+.sound-mixer-v2 .mixer-rows::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sound-mixer-v2 .mixer-rows::-webkit-scrollbar-thumb {
+  background: var(--blue);
+  border-radius: 4px;
+}
+.sound-mixer-v2 .mixer-rows::-webkit-scrollbar-thumb:hover {
+  background: var(--navy);
+}
+
+/* 5-column override of the 4-column .mixer-row from LeftPanel.css.
+   minmax(0, 1fr) lets the flexible columns shrink below their
+   min-content width so the row stays within the container when the
+   vertical scrollbar appears. */
+.sound-mixer-v2 .mixer-row {
+  grid-template-columns: 18px minmax(0, 1fr) minmax(0, 1fr) 56px 22px;
+}
+
+.sound-mixer-v2 .mixer-label-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: normal;
+  min-width: 0;
+}
+.sound-mixer-v2 .mixer-label-with-icon > svg {
+  flex-shrink: 0;
+  color: var(--navy);
+}
+.sound-mixer-v2 .mixer-label-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sound-mixer-v2 .mixer-label-text > span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sound-mixer-v2 .mixer-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sound-mixer-v2 .mixer-row.off .mixer-label-text > span { color: var(--text-muted); }
+
+.sound-mixer-v2 .delete-btn {
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--red);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.sound-mixer-v2 .delete-btn:hover {
+  background: #fdf2f2;
+  border-color: var(--red);
+}
+
+/* ============ CarView: placement mode + muted sources ============ */
+.car-view.placement-mode svg { cursor: crosshair; }
+
+.car-view-placement-hint {
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  background: #fff7e6;
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+.car-view svg .sv-source { transition: opacity 0.15s ease, filter 0.15s ease; }
+.car-view svg .sv-source.muted { opacity: 0.35; }
+/* Hover-driven highlight: dim every non-matching source and lift the
+   matching one with a soft glow so it reads as brighter. These compose
+   with `.muted` (muted highlighted still gets the glow, just less opaque). */
+.car-view svg .sv-source.dimmed { opacity: 0.18; }
+.car-view svg .sv-source.muted.dimmed { opacity: 0.1; }
+.car-view svg .sv-source.highlighted {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--orange)) drop-shadow(0 0 12px rgba(240, 173, 78, 0.6));
+}
+.car-view svg .sv-source.muted.highlighted { opacity: 0.6; }
+
+/* Mixer row hover background to make the active row obvious. */
+.sound-mixer-v2 .mixer-row.hovered {
+  background: var(--light-blue);
+  border-radius: 4px;
+}
+
+.car-view-add-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.car-view-add-row .car-model-select {
+  flex: 1 1 180px;
+}
+.car-view-add-row .add-sound-btn,
+.car-view-add-row .reset-btn {
+  flex: 0 0 auto;
+}
+.car-view-add-row .add-sound-btn {
+  padding: 6px 14px;
+  font-size: 14px;
+  background: var(--navy);
+  color: white;
+  border: 1px solid var(--navy);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.car-view-add-row .add-sound-btn:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.car-view-add-row .reset-btn {
+  padding: 6px 14px;
+  font-size: 14px;
+  color: var(--red);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.car-view-add-row .reset-btn:hover:not(:disabled) {
+  background: #fdf2f2;
+  border-color: var(--red);
+}
+.car-view-add-row .reset-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
