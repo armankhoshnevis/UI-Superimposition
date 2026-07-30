@@ -27,7 +27,7 @@ Sourced from [ui/package.json](ui/package.json):
     - scenario picker 
     - speed slider (S0–S3)
     - window openness (W0–W3)
-    - vent openness (V0–V3)
+    - vent openness (V0–V4)
     - SNR slider (−10 to +20 dB).
 - **Center panel** ([ui/src/components/center_panel/](ui/src/components/center_panel/)): 
     - top-down GV80 / GV60 car diagram 
