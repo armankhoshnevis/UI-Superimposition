@@ -112,7 +112,8 @@ export default function App() {
       })
       setPreviewOpen(true)
     } catch (err) {
-      setError(`Generation failed: ${err.message}`)
+      const detail = err.response?.data?.error ?? err.message
+      setError(`Generation failed: ${detail}`)
     } finally {
       setGenerating(false)
     }

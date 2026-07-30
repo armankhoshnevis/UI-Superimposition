@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { buildGeneratePayload } from '../../payload'
 
-const BASE_URL = 'http://localhost:5000'
+// const BASE_URL = 'http://localhost:5000'
+const BASE_URL = 'http://127.0.0.1:5000'
 
 export default function AudioSaveExport({ open, onClose, config, result }) {
   const [fileName, setFileName] = useState('')

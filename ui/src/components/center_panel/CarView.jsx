@@ -3,13 +3,22 @@ import { useEffect, useState } from 'react'
 import { getSoundById, getDirection } from '../../sound_library'
 import { getCarModel, getViewBox } from '../../car_models'
 
-// Window fill color, keyed by openness (0..3): dark navy → white.
-const WINDOW_COLORS = ['#1F3A5F', '#3D6090', '#7DAACE', '#FFFFFF']
+// Window fill color, keyed by openness (0..3).
+const WINDOW_COLORS = [
+  '#1F3A5F',
+  '#3D6090',
+  '#7DAACE',
+  '#FFFFFF',
+]
 
-// Vents use the same dark-navy → white palette as the windows so the two
-// controls read the same visually: dark when closed, progressively lighter
-// until white when fully open.
-const VENT_COLORS = WINDOW_COLORS
+// Vent fill color, keyed by level (0..4).
+const VENT_COLORS = [
+  '#1F3A5F',
+  '#35557D',
+  '#557DA6',
+  '#8FB5D1',
+  '#FFFFFF',
+]
 
 // Mic position role labels (front-left, front-right, rear-left, rear-right).
 const MIC_ROLES = ['FL', 'FR', 'RL', 'RR']

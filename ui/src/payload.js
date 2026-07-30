@@ -6,7 +6,7 @@
 //   {
 //     driving: 0|1|2|3,
 //     window:  0|1|2|3,
-//     venting: 0|1|2|3,
+//     venting: 0|1|2|3|4,
 //     overlays: [{ name, gain?, offset?, location?, velocity? }, ...]
 //   }
 //
@@ -106,8 +106,9 @@ export function buildGeneratePayload(config) {
   }
 
   return {
+    speed_mph: config?.speed_mph ?? 0,
     driving: mphToDriving(config?.speed_mph),
-    window:  config?.window_openness ?? 0,
+    window: config?.window_openness ?? 0,
     venting: config?.vent_openness ?? 0,
     overlays,
   }

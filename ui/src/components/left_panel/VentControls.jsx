@@ -1,8 +1,8 @@
 // ui/src/components/left_panel/VentControls.jsx
 // Single global vent-openness control. The slider applies uniformly to
-// all vents in the cabin — Closed / Slightly / Mostly / Open.
+// all vents in the cabin — Off / Level 1 / Level 2 / Level 3 / Level 4.
 
-const VENT_OPENNESS_LABELS = ['Closed', 'Slightly', 'Mostly', 'Open']
+const VENT_OPENNESS_LABELS = ['Off', 'Level 1', 'Level 2', 'Level 3', 'Level 4']
 
 function deriveVentState(openness) {
   return openness === 0 ? 'V0' : `V${openness}`
@@ -27,7 +27,7 @@ export default function VentControls({ config, setConfig }) {
           <div className="slider-row" style={{ gridTemplateColumns: '1fr' }}>
             <input
               type="range"
-              min="0" max="3" step="1"
+              min="0" max="4" step="1"
               value={ventOpenness}
               onChange={changeVentOpenness}
             />
