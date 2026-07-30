@@ -54,56 +54,56 @@ class noise_superimposition:
             )
     
     def recording_path(self, speed, window, vent):
-    """Return a randomly selected WAV for a recording condition.
+        """Return a randomly selected WAV for a recording condition.
 
-    Args:
-        speed: Vehicle speed in MPH: 0, 25, 45, or 70.
-        window: Window setup: 0, 1, 2, or 3.
-        vent: Vent setup: 0, 1, 2, 3, or 4.
+        Args:
+            speed: Vehicle speed in MPH: 0, 25, 45, or 70.
+            window: Window setup: 0, 1, 2, or 3.
+            vent: Vent setup: 0, 1, 2, 3, or 4.
 
-    Returns:
-        pathlib.Path: A randomly selected Ch_Num_1 WAV path.
+        Returns:
+            pathlib.Path: A randomly selected Ch_Num_1 WAV path.
 
-    Raises:
-        ValueError: If the requested condition is unsupported.
-        FileNotFoundError: If the condition directory or its WAV files
-            are missing.
-    """
-    self._validate_condition(
-        speed=speed,
-        window=window,
-        vent=vent,
-    )
-
-    recording_directory = (
-        self._path
-        / f"Window_{window}"
-        / f"Vent_{vent}"
-        / f"{speed}_MPH"
-        / f"Ch_Num_{self.CHANNEL_NUMBER}"
-    )
-
-    if not recording_directory.is_dir():
-        raise FileNotFoundError(
-            "Recording directory does not exist for "
-            f"window={window}, vent={vent}, speed={speed}: "
-            f"{recording_directory}"
+        Raises:
+            ValueError: If the requested condition is unsupported.
+            FileNotFoundError: If the condition directory or its WAV files
+                are missing.
+        """
+        self._validate_condition(
+            speed=speed,
+            window=window,
+            vent=vent,
         )
 
-    wav_files = [
-        file_path
-        for file_path in recording_directory.glob("*.wav")
-        if file_path.is_file()
-    ]
-
-    if not wav_files:
-        raise FileNotFoundError(
-            "No WAV files found for "
-            f"window={window}, vent={vent}, speed={speed}: "
-            f"{recording_directory}"
+        recording_directory = (
+            self._path
+            / f"Window_{window}"
+            / f"Vent_{vent}"
+            / f"{speed}_MPH"
+            / f"Ch_Num_{self.CHANNEL_NUMBER}"
         )
 
-    return random.choice(wav_files)
+        if not recording_directory.is_dir():
+            raise FileNotFoundError(
+                "Recording directory does not exist for "
+                f"window={window}, vent={vent}, speed={speed}: "
+                f"{recording_directory}"
+            )
+
+        wav_files = [
+            file_path
+            for file_path in recording_directory.glob("*.wav")
+            if file_path.is_file()
+        ]
+
+        if not wav_files:
+            raise FileNotFoundError(
+                "No WAV files found for "
+                f"window={window}, vent={vent}, speed={speed}: "
+                f"{recording_directory}"
+            )
+
+        return random.choice(wav_files)
 
     def load_recording(self, speed, window, vent):
         """Load the first Ch_Num_1 WAV for a recording condition.
