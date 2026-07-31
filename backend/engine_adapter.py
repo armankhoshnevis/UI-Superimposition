@@ -1,8 +1,9 @@
-# backend/engine_adapter.py
 import os
 import json
 from pathlib import Path
+
 import numpy as np
+
 import soundfile as sf
 
 from superimposition.noise_superimposition import noise_superimposition
@@ -56,7 +57,7 @@ def generate_from_payload(req, scenario):
 
     loader = noise_superimposition(_DATA_ROOT, fs=48000)
 
-    audio, selected_source = loader.load_recording(
+    audio, selected_sources = loader.superimpose_recordings(
         speed=speed,
         window=window,
         vent=vent,
@@ -67,20 +68,47 @@ def generate_from_payload(req, scenario):
     )
     out_path = synth_dir / out_name
 
+    peak = float(np.max(np.abs(audio)))
+
+    print(f"Output peak before writing: {peak:.6f}")
+
+    if peak > 1.0:
+        print("Warning: output exceeds [-1, 1] and may clip.")
+    else:
+        print("Output is within [-1, 1].")
+    
     sf.write(out_path, audio, loader.fs)
+
+    selected_source_files = {
+        "moving": (
+            str(selected_sources["moving"])
+            if selected_sources["moving"] is not None
+            else None
+        ),
+        "stationary": (
+            str(selected_sources["stationary"])
+            if selected_sources["stationary"] is not None
+            else None
+        ),
+        "stationary_baseline": (
+            str(selected_sources["stationary_baseline"])
+            if selected_sources["stationary_baseline"] is not None
+            else None
+        ),
+    }
 
     meta = {
         "file": out_name,
         "scenario_id": scenario_id,
-        "sample_rate": loader.fs,
+        "sample_rate": int(loader.fs),
         "channels": int(audio.shape[1]),
         "duration_sec": float(audio.shape[0] / loader.fs),
         "driving": driving,
         "speed_mph": speed,
         "window": window,
         "venting": vent,
-        "channel_number": loader.CHANNEL_NUMBER,
-        "selected_source_file": str(selected_source),
+        "channel_number": int(selected_sources["channel_number"]),
+        "selected_source_files": selected_source_files,
     }
 
     meta_name = (
