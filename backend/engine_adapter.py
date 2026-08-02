@@ -1,5 +1,6 @@
 import os
 import json
+from uuid import uuid4
 from pathlib import Path
 
 import numpy as np
@@ -63,20 +64,47 @@ def generate_from_payload(req, scenario):
         vent=vent,
     )
 
-    out_name = (
-        f"{scenario_id}_speed{speed}_window{window}_vent{vent}.wav"
+    channel_number = int(selected_sources["channel_number"])
+    
+    generation_id = uuid4().hex
+    
+    out_base = (
+        f"{scenario_id}"
+        f"_speed{speed}"
+        f"_window{window}"
+        f"_vent{vent}"
+        f"_ch{channel_number}"
+        f"_{generation_id}"
     )
+    out_name = f"{out_base}.wav"
     out_path = synth_dir / out_name
 
-    peak = float(np.max(np.abs(audio)))
+    peak_before_normalization = max(float(np.max(audio)), float(-np.min(audio)))
+    normalization_gain = 1.0
+    normalization_applied = False
+    if peak_before_normalization > 1.0:
+        target_peak = 0.99
+        normalization_gain = target_peak / peak_before_normalization
 
-    print(f"Output peak before writing: {peak:.6f}")
+        audio = (audio * normalization_gain).astype(np.float32, copy=False)
 
-    if peak > 1.0:
-        print("Warning: output exceeds [-1, 1] and may clip.")
+        normalization_applied = True
+
+        print(
+            "Output exceeded full scale and was peak-normalized: "
+            f"original peak={peak_before_normalization:.6f}, "
+            f"gain={normalization_gain:.6f}, "
+            f"target peak={target_peak:.2f}."
+        )
     else:
-        print("Output is within [-1, 1].")
-    
+        print(
+            "Output is within full scale; "
+            f"peak={peak_before_normalization:.6f}. "
+            "Normalization was not applied."
+        )
+
+    peak_after_normalization = max(float(np.max(audio)), float(-np.min(audio)))
+
     sf.write(out_path, audio, loader.fs)
 
     selected_source_files = {
@@ -99,6 +127,7 @@ def generate_from_payload(req, scenario):
 
     meta = {
         "file": out_name,
+        "generation_id": generation_id,
         "scenario_id": scenario_id,
         "sample_rate": int(loader.fs),
         "channels": int(audio.shape[1]),
@@ -107,14 +136,17 @@ def generate_from_payload(req, scenario):
         "speed_mph": speed,
         "window": window,
         "venting": vent,
-        "channel_number": int(selected_sources["channel_number"]),
+        "channel_number": channel_number,
+        "normalization": {
+            "applied": normalization_applied,
+            "peak_before": peak_before_normalization,
+            "peak_after": peak_after_normalization,
+            "linear_gain": normalization_gain,
+        },
         "selected_source_files": selected_source_files,
     }
 
-    meta_name = (
-        f"scenario_id{scenario_id}_speed{speed}"
-        f"_window{window}_vent{vent}.json"
-    )
+    meta_name = f"{out_base}.json"
     meta_path = meta_dir / meta_name
 
     with meta_path.open("w", encoding="utf-8") as file:
