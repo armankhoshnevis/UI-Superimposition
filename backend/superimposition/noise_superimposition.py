@@ -12,7 +12,7 @@ class noise_superimposition:
     WINDOWS = (0, 1, 2, 3)
     VENTS = (0, 1, 2, 3, 4)
     SPEEDS = (0, 25, 45, 70)
-    CHANNEL_NUMBERS = (1, 2, 3, 4)
+    CHANNEL_NUMBERS = (1, 2)
 
     def __init__(self, path, fs=48000):
         """Create a loader for the NoRain dataset.
